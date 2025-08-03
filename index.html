@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Enhancement Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6fffa;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .image-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .image-box {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .image-box h3 {
+            margin-top: 0;
+            color: #4a5568;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .image-box img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            margin: 30px 0;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+        }
+        
+        .value-display {
+            display: inline-block;
+            float: right;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .download-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .preset-btn:hover {
+            background: #cbd5e0;
+            transform: translateY(-1px);
+        }
+        
+        .preset-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Photo Enhancement Studio</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+            <p style="font-size: 18px; margin-bottom: 15px;">Drag and drop your photo here or click to select</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Choose Photo
+            </button>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div class="controls" id="controls" style="display: none;">
+            <h3 style="color: #4a5568; margin-top: 0;">Enhancement Controls</h3>
+            
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="applyPreset('original')">Original</button>
+                <button class="preset-btn" onclick="applyPreset('vintage')">Vintage Restore</button>
+                <button class="preset-btn" onclick="applyPreset('vibrant')">Vibrant</button>
+                <button class="preset-btn" onclick="applyPreset('classic')">Classic</button>
+                <button class="preset-btn" onclick="applyPreset('dramatic')">Dramatic</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Brightness <span class="value-display" id="brightnessValue">100</span></label>
+                <input type="range" id="brightness" min="0" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Contrast <span class="value-display" id="contrastValue">100</span></label>
+                <input type="range" id="contrast" min="0" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Saturation <span class="value-display" id="saturationValue">100</span></label>
+                <input type="range" id="saturation" min="0" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Exposure <span class="value-display" id="exposureValue">100</span></label>
+                <input type="range" id="exposure" min="50" max="150" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Shadows <span class="value-display" id="shadowsValue">100</span></label>
+                <input type="range" id="shadows" min="0" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Highlights <span class="value-display" id="highlightsValue">100</span></label>
+                <input type="range" id="highlights" min="0" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Warmth <span class="value-display" id="warmthValue">0</span></label>
+                <input type="range" id="warmth" min="-100" max="100" value="0">
+            </div>
+            
+            <div class="control-group">
+                <label>Sharpness <span class="value-display" id="sharpnessValue">100</span></label>
+                <input type="range" id="sharpness" min="0" max="200" value="100">
+            </div>
+            
+            <button class="download-btn" id="downloadBtn" onclick="downloadImage()">
+                💾 Download Enhanced Photo
+            </button>
+        </div>
+        
+        <div class="image-container" id="imageContainer" style="display: none;">
+            <div class="image-box">
+                <h3>Original Photo</h3>
+                <img id="originalImage" alt="Original">
+            </div>
+            <div class="image-box">
+                <h3>Enhanced Photo</h3>
+                <canvas id="enhancedCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let originalImageData = null;
+        let canvas = null;
+        let ctx = null;
+        
+        // File input and drag & drop handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const controls = document.getElementById('controls');
+        const imageContainer = document.getElementById('imageContainer');
+        const originalImage = document.getElementById('originalImage');
+        const enhancedCanvas = document.getElementById('enhancedCanvas');
+        
+        fileInput.addEventListener('change', handleFile);
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        });
+        
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+        
+        function processFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    setupCanvas(img);
+                    controls.style.display = 'block';
+                    imageContainer.style.display = 'flex';
+                    originalImage.src = e.target.result;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function setupCanvas(img) {
+            canvas = enhancedCanvas;
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match image
+            const maxWidth = 600;
+            const maxHeight = 400;
+            let { width, height } = img;
+            
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width *= ratio;
+                height *= ratio;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            canvas.style.width = '100%';
+            canvas.style.height = 'auto';
+            canvas.style.borderRadius = '10px';
+            canvas.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            
+            // Draw initial image
+            ctx.drawImage(img, 0, 0, width, height);
+            originalImageData = ctx.getImageData(0, 0, width, height);
+            
+            // Set up event listeners for controls
+            setupControlListeners();
+            applyEnhancements();
+        }
+        
+        function setupControlListeners() {
+            const controls = ['brightness', 'contrast', 'saturation', 'exposure', 'shadows', 'highlights', 'warmth', 'sharpness'];
+            
+            controls.forEach(control => {
+                const element = document.getElementById(control);
+                const valueDisplay = document.getElementById(control + 'Value');
+                
+                element.addEventListener('input', (e) => {
+                    valueDisplay.textContent = e.target.value;
+                    applyEnhancements();
+                });
+            });
+        }
+        
+        function applyEnhancements() {
+            if (!originalImageData) return;
+            
+            const brightness = parseInt(document.getElementById('brightness').value);
+            const contrast = parseInt(document.getElementById('contrast').value);
+            const saturation = parseInt(document.getElementById('saturation').value);
+            const exposure = parseInt(document.getElementById('exposure').value);
+            const shadows = parseInt(document.getElementById('shadows').value);
+            const highlights = parseInt(document.getElementById('highlights').value);
+            const warmth = parseInt(document.getElementById('warmth').value);
+            const sharpness = parseInt(document.getElementById('sharpness').value);
+            
+            // Create a copy of the original image data
+            const imageData = ctx.createImageData(originalImageData);
+            const data = imageData.data;
+            const originalData = originalImageData.data;
+            
+            // Apply enhancements pixel by pixel
+            for (let i = 0; i < data.length; i += 4) {
+                let r = originalData[i];
+                let g = originalData[i + 1];
+                let b = originalData[i + 2];
+                
+                // Brightness
+                r = Math.max(0, Math.min(255, r * (brightness / 100)));
+                g = Math.max(0, Math.min(255, g * (brightness / 100)));
+                b = Math.max(0, Math.min(255, b * (brightness / 100)));
+                
+                // Contrast
+                const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+                r = Math.max(0, Math.min(255, contrastFactor * (r - 128) + 128));
+                g = Math.max(0, Math.min(255, contrastFactor * (g - 128) + 128));
+                b = Math.max(0, Math.min(255, contrastFactor * (b - 128) + 128));
+                
+                // Exposure
+                const exposureFactor = exposure / 100;
+                r = Math.max(0, Math.min(255, r * exposureFactor));
+                g = Math.max(0, Math.min(255, g * exposureFactor));
+                b = Math.max(0, Math.min(255, b * exposureFactor));
+                
+                // Warmth (adjust color temperature)
+                if (warmth !== 0) {
+                    const warmthFactor = warmth / 100;
+                    r = Math.max(0, Math.min(255, r + (warmthFactor * 20)));
+                    b = Math.max(0, Math.min(255, b - (warmthFactor * 15)));
+                }
+                
+                // Saturation
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                const satFactor = saturation / 100;
+                r = Math.max(0, Math.min(255, gray + satFactor * (r - gray)));
+                g = Math.max(0, Math.min(255, gray + satFactor * (g - gray)));
+                b = Math.max(0, Math.min(255, gray + satFactor * (b - gray)));
+                
+                // Simple shadow/highlight adjustment
+                const luminance = (r + g + b) / 3;
+                if (luminance < 128) { // Shadows
+                    const shadowFactor = shadows / 100;
+                    r = Math.max(0, Math.min(255, r * shadowFactor));
+                    g = Math.max(0, Math.min(255, g * shadowFactor));
+                    b = Math.max(0, Math.min(255, b * shadowFactor));
+                } else { // Highlights
+                    const highlightFactor = highlights / 100;
+                    r = Math.max(0, Math.min(255, r * highlightFactor));
+                    g = Math.max(0, Math.min(255, g * highlightFactor));
+                    b = Math.max(0, Math.min(255, b * highlightFactor));
+                }
+                
+                data[i] = r;
+                data[i + 1] = g;
+                data[i + 2] = b;
+                data[i + 3] = originalData[i + 3]; // Alpha channel
+            }
+            
+            // Apply the enhanced image data to canvas
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Apply sharpness filter if needed
+            if (sharpness !== 100) {
+                applySharpnessFilter(sharpness / 100);
+            }
+        }
+        
+        function applySharpnessFilter(factor) {
+            if (factor === 1) return;
+            
+            const filterValue = factor < 1 ? 'blur(' + (1 - factor) + 'px)' : 'contrast(' + factor + ')';
+            canvas.style.filter = filterValue;
+        }
+        
+        function applyPreset(preset) {
+            // Remove active class from all preset buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            const presets = {
+                original: {
+                    brightness: 100,
+                    contrast: 100,
+                    saturation: 100,
+                    exposure: 100,
+                    shadows: 100,
+                    highlights: 100,
+                    warmth: 0,
+                    sharpness: 100
+                },
+                vintage: {
+                    brightness: 110,
+                    contrast: 120,
+                    saturation: 85,
+                    exposure: 105,
+                    shadows: 110,
+                    highlights: 95,
+                    warmth: 25,
+                    sharpness: 110
+                },
+                vibrant: {
+                    brightness: 105,
+                    contrast: 115,
+                    saturation: 125,
+                    exposure: 110,
+                    shadows: 105,
+                    highlights: 100,
+                    warmth: 10,
+                    sharpness: 120
+                },
+                classic: {
+                    brightness: 100,
+                    contrast: 110,
+                    saturation: 95,
+                    exposure: 100,
+                    shadows: 100,
+                    highlights: 100,
+                    warmth: 5,
+                    sharpness: 105
+                },
+                dramatic: {
+                    brightness: 95,
+                    contrast: 140,
+                    saturation: 110,
+                    exposure: 95,
+                    shadows: 120,
+                    highlights: 85,
+                    warmth: -5,
+                    sharpness: 130
+                }
+            };
+            
+            const presetValues = presets[preset];
+            if (presetValues) {
+                Object.keys(presetValues).forEach(key => {
+                    const element = document.getElementById(key);
+                    const valueDisplay = document.getElementById(key + 'Value');
+                    if (element && valueDisplay) {
+                        element.value = presetValues[key];
+                        valueDisplay.textContent = presetValues[key];
+                    }
+                });
+                applyEnhancements();
+            }
+        }
+        
+        function downloadImage() {
+            if (!canvas) return;
+            
+            const link = document.createElement('a');
+            link.download = 'enhanced-photo.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>
